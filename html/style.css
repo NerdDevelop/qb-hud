@@ -1,0 +1,943 @@
+/* NERD HUD - production styles */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    font-family: var(--nerd-font-body);
+    color: var(--nerd-white);
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: transparent !important;
+    background-color: transparent !important;
+    user-select: none;
+}
+
+/* ============= GLASS UTIL ============= */
+.glass {
+    background: rgba(8, 8, 8, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ============= COMPASS (TOP CENTER) ============= */
+.compass {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex; align-items: center; gap: 14px;
+    padding: 9px 16px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.compass__heading {
+    font-family: var(--nerd-font-mono);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--nerd-primary);
+    min-width: 38px;
+    text-shadow: 0 0 10px rgba(237,2,70,0.4);
+}
+.compass__sep {
+    width: 1px; height: 14px;
+    background: rgba(255,255,255,0.12);
+}
+.compass__street {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--nerd-white);
+    font-weight: 800;
+}
+.compass__zone {
+    font-size: 10px;
+    color: var(--nerd-text-muted);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+/* ============= STATS (PARALLELOGRAM BLADES) ============= */
+.stats {
+    position: fixed;
+    bottom: 24px; left: 24px;
+    z-index: 50;
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+}
+
+.stat {
+    --stat-color: var(--nerd-primary);
+    --stat-pct: 100%;
+    position: relative;
+    width: 56px;
+    height: 38px;
+    cursor: default;
+    transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.stat:hover { transform: translateY(-2px); }
+
+.stat__bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 8, 8, 0.78);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.04);
+    clip-path: polygon(14% 0, 100% 0, 86% 100%, 0 100%);
+    overflow: hidden;
+}
+
+.stat__fill {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 4px;
+    width: var(--stat-pct);
+    background-image: repeating-linear-gradient(
+        115deg,
+        var(--stat-color) 0,
+        var(--stat-color) 4px,
+        transparent 4px,
+        transparent 6px
+    );
+    filter: drop-shadow(0 0 4px var(--stat-color));
+    transition: width 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stat__bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 60%, var(--stat-color) 200%);
+    opacity: 0.08;
+    pointer-events: none;
+}
+
+.stat__content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 6px;
+}
+
+.stat__icon {
+    width: 14px; height: 14px;
+    color: var(--stat-color);
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 3px var(--stat-color));
+}
+
+.stat__value {
+    font-family: var(--nerd-font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--nerd-white);
+    letter-spacing: 0.02em;
+}
+
+/* Status colors */
+.stat--health    { --stat-color: #FF3B30; }
+.stat--armor     { --stat-color: #00A3FF; }
+.stat--hunger    { --stat-color: #FFB800; }
+.stat--thirst    { --stat-color: #06B6D4; }
+.stat--stamina   { --stat-color: #00D26A; }
+.stat--oxygen    { --stat-color: #A855F7; }
+.stat--mic       { --stat-color: var(--nerd-primary); }
+.stat--stress    { --stat-color: #FF6B35; }
+.stat--parachute { --stat-color: #A855F7; }
+
+/* Critical state */
+.stat.is-critical { animation: critPulse 1.4s ease-in-out infinite; }
+@keyframes critPulse {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+.stat.is-critical .stat__bg { border-top-color: var(--stat-color); }
+.stat.is-critical .stat__fill { animation: fillBlink 700ms ease-in-out infinite; }
+@keyframes fillBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Mic active (talking) */
+.stat--mic.is-active .stat__icon {
+    animation: micActive 800ms ease-in-out infinite;
+}
+@keyframes micActive {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 3px var(--stat-color)); }
+    50%      { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--stat-color)); }
+}
+
+/* Mic talking — pulse the fill */
+.stat--mic.is-talking .stat__fill {
+    animation: micTalking 400ms ease-in-out infinite;
+}
+@keyframes micTalking {
+    0%, 100% { opacity: 1; transform: scaleY(1); }
+    50%      { opacity: 0.6; transform: scaleY(0.7); }
+}
+
+/* Mic on radio — different color tint */
+.stat--mic.is-radio .stat__bg {
+    border-top-color: #FFB800;
+}
+.stat--mic.is-radio .stat__icon {
+    color: #FFB800;
+    filter: drop-shadow(0 0 4px #FFB800);
+}
+
+/* Tooltip */
+.stat__tip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid var(--stat-color);
+    border-radius: 4px;
+    font-family: var(--nerd-font-mono);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--stat-color);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 200ms ease;
+}
+.stat:hover .stat__tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* speedometer - horizontal segmented gauge, NERD parallelogram look */
+
+/* Container is invisible by default — children carry visual weight */
+.speedo {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    z-index: 50;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* === GEAR INDICATOR — parallelogram with brand identity === */
+.speedo__gear-wrap {
+    width: 38px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+/* Pink glow halo behind the gear */
+.speedo__gear-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--nerd-primary);
+    transform: skew(-12deg);
+    box-shadow:
+        0 0 0 1.5px rgba(237, 2, 70, 0.4),
+        0 0 18px rgba(237, 2, 70, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+/* Subtle scan line on the gear */
+.speedo__gear-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: skew(-12deg);
+    background: linear-gradient(
+        180deg,
+        transparent 48%,
+        rgba(255,255,255,0.10) 50%,
+        transparent 52%
+    );
+    z-index: 2;
+    pointer-events: none;
+}
+.speedo__gear {
+    position: relative !important;
+    z-index: 3;
+    font-family: var(--nerd-font-mono);
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--nerd-white);
+    letter-spacing: 0.04em;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+}
+
+/* === SEGMENTED BAR === */
+.speedo__bar-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+    align-self: center;
+}
+
+/* Top label row */
+.speedo__bar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--nerd-font-mono);
+    font-size: 7px;
+    font-weight: 800;
+    color: var(--nerd-text-muted);
+    letter-spacing: 0.20em;
+    padding: 0 2px;
+    line-height: 1;
+}
+.speedo__bar-meta span:last-child {
+    color: rgba(255, 184, 0, 0.65);
+}
+
+.speedo__bar {
+    width: 154px;
+    height: 16px;
+    display: flex;
+    gap: 2px;
+    align-items: stretch;
+}
+
+/* === SEGMENT === parallelogram-skewed slats */
+.speedo .seg {
+    flex: 1;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05) !important;
+    transform: skew(-14deg);
+    transition:
+        background 80ms ease,
+        box-shadow 80ms ease,
+        transform 120ms ease;
+    position: relative;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+/* Thin gray outline on inactive segments so the parallelograms stay
+   visible against bright GTA daylight skies. Active segments don't need
+   it - they already glow on their own. */
+.speedo .seg:not(.is-on) {
+    outline: 1px solid rgba(150, 150, 150, 0.35);
+    outline-offset: -1px;
+}
+
+/* Active state — pink with glow */
+.speedo .seg.is-on {
+    background: linear-gradient(180deg, #ff5b8d 0%, var(--nerd-primary) 100%) !important;
+    box-shadow:
+        0 0 6px rgba(237, 2, 70, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Mid-zone segments (4-10) — slightly hotter pink when on */
+.speedo .seg.seg--mid.is-on {
+    background: linear-gradient(180deg, #ff7a9c 0%, #ff1a5e 100%) !important;
+}
+
+/* Redline segments (11-13) — amber/gold */
+.speedo .seg.seg--redline {
+    background: rgba(255, 184, 0, 0.05) !important;
+}
+.speedo .seg.seg--redline.is-on {
+    background: linear-gradient(180deg, #FFD86B 0%, #FFB800 100%) !important;
+    box-shadow:
+        0 0 8px rgba(255, 184, 0, 0.7),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+/* The leading-edge active segment pulses + slightly taller */
+@keyframes seg-edge-pulse {
+    0%, 100% { filter: brightness(1); transform: skew(-14deg) scaleY(1); }
+    50%      { filter: brightness(1.35); transform: skew(-14deg) scaleY(1.08); }
+}
+.speedo .seg.is-edge {
+    animation: seg-edge-pulse 1s ease-in-out infinite;
+}
+
+/* === FUEL BAR — single skewed parallelogram (cut at both ends) === */
+.speedo__fuel {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    transform: skew(-14deg);
+    overflow: hidden;
+    position: relative;
+    margin-top: 4px;
+}
+
+.speedo .speedo__fuel-fill {
+    height: 100% !important;
+    width: 100%;
+    background: linear-gradient(180deg, #4CFF8B 0%, var(--nerd-success) 100%) !important;
+    box-shadow:
+        0 0 6px rgba(0, 210, 106, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.20) !important;
+    transition:
+        width 450ms cubic-bezier(0.16, 1, 0.3, 1),
+        background 220ms ease,
+        box-shadow 220ms ease !important;
+    border: none !important;
+    border-radius: 0 !important;
+}
+
+.speedo .speedo__fuel-fill.is-warning {
+    background: linear-gradient(180deg, #FFD86B 0%, var(--nerd-warning) 100%) !important;
+    box-shadow:
+        0 0 6px rgba(255, 184, 0, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.20) !important;
+}
+
+.speedo .speedo__fuel-fill.is-critical {
+    background: linear-gradient(180deg, #FF7A7E 0%, var(--nerd-danger) 100%) !important;
+    box-shadow:
+        0 0 8px rgba(255, 59, 48, 0.75),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.20) !important;
+    animation: fuel-pulse 1s ease-in-out infinite;
+}
+
+@keyframes fuel-pulse {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.35); }
+}
+
+/* === READOUT (number + unit) === */
+.speedo__readout {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    line-height: 1;
+    min-width: 60px;
+}
+.speedo__value {
+    font-family: var(--nerd-font-mono);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--nerd-white);
+    letter-spacing: -0.03em;
+    text-shadow:
+        0 0 14px rgba(237, 2, 70, 0.5),
+        0 1px 2px rgba(0, 0, 0, 0.7);
+    line-height: 0.9;
+}
+.speedo__unit {
+    font-family: var(--nerd-font-mono);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.24em;
+    color: var(--nerd-text-muted);
+    margin-top: 4px;
+    padding-right: 1px;
+}
+
+/* ============= VEHICLE INFO — Clean inline indicators ============= */
+.vinfo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    flex-shrink: 0;
+}
+.vi {
+    --c: #00D26A;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 300ms ease;
+}
+.vi__icon {
+    width: 15px; height: 15px;
+    color: var(--c);
+    flex-shrink: 0;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+    transition: color 300ms ease;
+}
+.vi__value {
+    font-family: var(--nerd-font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--nerd-white);
+    letter-spacing: 0.02em;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    min-width: 22px;
+}
+
+/* Fuel state colors */
+.vi--fuel.is-good     { --c: #00D26A; }
+.vi--fuel.is-warning  { --c: #FFB800; }
+.vi--fuel.is-critical { --c: #FF3B30; animation: vi-pulse 700ms ease-in-out infinite; }
+
+/* Engine state colors */
+.vi--engine.is-good     { --c: #00D26A; }
+.vi--engine.is-warning  { --c: #FFB800; }
+.vi--engine.is-critical { --c: #FF3B30; animation: vi-pulse 700ms ease-in-out infinite; }
+
+/* Seatbelt state */
+.vi--belt.is-on  { --c: #00D26A; }
+.vi--belt.is-off { --c: #FF3B30; animation: vi-pulse 600ms ease-in-out infinite; }
+
+@keyframes vi-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.45; }
+}
+
+/* ============= SETTINGS PANEL ============= */
+.nui-settings {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    width: 400px;
+    max-height: 85vh;
+    background: rgba(10, 10, 10, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7),
+                0 -1px 0 rgba(237, 2, 70, 0.4) inset;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: nuiIn 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nui-settings.is-open { display: flex; }
+@keyframes nuiIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.nui-settings.is-dragged {
+    left: var(--nui-x); top: var(--nui-y);
+    transform: none;
+}
+
+.nui-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: grab;
+    user-select: none;
+    background: linear-gradient(180deg, rgba(237, 2, 70, 0.08), transparent);
+}
+.nui-header:active { cursor: grabbing; }
+.nui-title {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--nerd-font-display);
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+}
+.nui-title::before { content: '*'; color: var(--nerd-primary); font-size: 22px; }
+.nui-sub {
+    font-family: var(--nerd-font-mono);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    color: var(--nerd-text-muted);
+    margin-top: 2px;
+}
+.nui-close {
+    width: 28px; height: 28px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 0;
+    border-radius: 50%;
+    color: var(--nerd-text-soft);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 200ms ease;
+}
+.nui-close:hover { background: var(--nerd-danger); color: var(--nerd-white); transform: rotate(90deg); }
+
+.nui-tabs {
+    display: flex;
+    padding: 4px;
+    margin: 10px 14px 0;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    gap: 3px;
+}
+.nui-tab {
+    flex: 1;
+    padding: 8px 6px;
+    background: transparent;
+    border: 0;
+    color: var(--nerd-text-soft);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 200ms ease;
+    font-family: var(--nerd-font-body);
+}
+.nui-tab:hover { color: var(--nerd-white); }
+.nui-tab.is-active {
+    background: var(--nerd-primary);
+    color: var(--nerd-white);
+    box-shadow: 0 4px 10px rgba(237, 2, 70, 0.3);
+}
+
+.nui-body { flex: 1; overflow-y: auto; padding: 16px; }
+.nui-body::-webkit-scrollbar { width: 4px; }
+.nui-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 100px; }
+
+.nui-pane { display: none; animation: paneIn 300ms cubic-bezier(0.16, 1, 0.3, 1); }
+.nui-pane.is-active { display: block; }
+@keyframes paneIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.nui-section { margin-bottom: 14px; }
+.nui-section:last-child { margin-bottom: 0; }
+.nui-section__label {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--nerd-text-muted);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+}
+.nui-section__label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
+}
+
+.color-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    margin-bottom: 5px;
+}
+.color-row__icon {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--row-color);
+    color: var(--nerd-white);
+    flex-shrink: 0;
+}
+.color-row__name { flex: 1; font-size: 11px; font-weight: 700; }
+.color-row__swatches { display: flex; gap: 4px; }
+.color-swatch {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 150ms ease;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.is-active {
+    border-color: var(--nerd-white);
+    box-shadow: 0 0 0 2px var(--nerd-primary);
+    transform: scale(1.1);
+}
+
+.toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    margin-bottom: 5px;
+}
+.toggle-row__title { font-size: 11px; font-weight: 700; }
+.toggle-row__desc { font-size: 9px; color: var(--nerd-text-muted); margin-top: 2px; }
+
+.nui-switch {
+    position: relative;
+    width: 34px; height: 20px;
+    flex-shrink: 0;
+}
+.nui-switch input { opacity: 0; width: 0; height: 0; }
+.nui-switch__slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    transition: 200ms;
+}
+.nui-switch__slider::before {
+    content: '';
+    position: absolute;
+    height: 14px; width: 14px;
+    left: 3px; bottom: 3px;
+    background: var(--nerd-white);
+    border-radius: 50%;
+    transition: 200ms;
+}
+.nui-switch input:checked + .nui-switch__slider {
+    background: var(--nerd-primary);
+    box-shadow: 0 0 10px rgba(237, 2, 70, 0.4);
+}
+.nui-switch input:checked + .nui-switch__slider::before { transform: translateX(14px); }
+
+.slider-row {
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    margin-bottom: 5px;
+}
+.slider-row__head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+}
+.slider-row__title { font-size: 11px; font-weight: 700; }
+.slider-row__value {
+    font-family: var(--nerd-font-mono);
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--nerd-primary);
+}
+.nui-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 100px;
+    outline: none;
+}
+.nui-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px; height: 14px;
+    background: var(--nerd-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--nerd-primary-glow);
+}
+
+/* Drag mode visuals */
+body.is-dragmode .draggable {
+    outline: 2px dashed rgba(237, 2, 70, 0.5);
+    outline-offset: 4px;
+    cursor: move !important;
+}
+body.is-dragmode .draggable:hover { outline-color: var(--nerd-primary); outline-style: solid; }
+body.is-dragmode .draggable.is-being-dragged {
+    outline-color: var(--nerd-success);
+    opacity: 0.85;
+}
+
+/* Resize mode (mouse wheel) */
+body.is-resize-mode { cursor: ns-resize; }
+body.is-resize-mode .draggable {
+    outline: 2px dashed rgba(0, 163, 255, 0.5);
+    outline-offset: 4px;
+    transition: outline-color 200ms ease;
+}
+body.is-resize-mode .draggable:hover {
+    outline-color: var(--nerd-info);
+    outline-style: solid;
+}
+/* Dim the settings panel while resize mode is on so the HUD reads better */
+body.is-resize-mode .nui-settings {
+    opacity: 0.4;
+    transition: opacity 200ms ease;
+    pointer-events: none;  /* panel ignores clicks - they pass through to the HUD */
+}
+body.is-resize-mode .nui-settings:hover {
+    opacity: 1;
+}
+/* header and footer stay interactive so you can still save/close */
+body.is-resize-mode .nui-settings .nui-header,
+body.is-resize-mode .nui-settings .nui-footer {
+    pointer-events: auto;
+}
+
+/* make sure the HUD elements catch clicks */
+body.is-resize-mode .draggable,
+body.is-resize-mode #speedo-container {
+    pointer-events: auto !important;
+}
+body.is-resize-mode .draggable * {
+    pointer-events: none;  /* children stay clear so the click reaches the parent */
+}
+
+/* Preview mode (settings open) - keep everything visible */
+body.settings-preview .speedo {
+    display: flex !important;
+    opacity: 0.9;
+}
+body.settings-preview .stat[data-stat="stress"],
+body.settings-preview .stat[data-stat="parachute"],
+body.settings-preview .stat[data-stat="oxygen"] {
+    display: block !important;
+    opacity: 0.7;
+}
+
+/* Floating scale indicator */
+.scale-indicator {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    padding: 14px 24px;
+    background: rgba(0, 163, 255, 0.95);
+    color: var(--nerd-white);
+    border-radius: 12px;
+    font-family: var(--nerd-font-display);
+    font-size: 32px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 8px 28px rgba(0, 163, 255, 0.4);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+}
+.scale-indicator.is-visible {
+    opacity: 1;
+}
+
+.layout-info {
+    padding: 12px;
+    background: rgba(237, 2, 70, 0.08);
+    border: 1px dashed rgba(237, 2, 70, 0.3);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 10px;
+    color: var(--nerd-text-soft);
+    line-height: 1.5;
+}
+.layout-info kbd {
+    display: inline-block;
+    padding: 1px 4px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 3px;
+    font-family: var(--nerd-font-mono);
+    font-size: 9px;
+    font-weight: 800;
+    color: var(--nerd-primary);
+}
+
+.nui-footer {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex; gap: 6px;
+    background: rgba(0, 0, 0, 0.3);
+}
+.nui-btn {
+    flex: 1;
+    padding: 9px;
+    border: 0;
+    border-radius: 8px;
+    font-family: var(--nerd-font-body);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 200ms ease;
+}
+.nui-btn--primary {
+    background: var(--nerd-primary);
+    color: var(--nerd-white);
+    box-shadow: 0 4px 12px rgba(237, 2, 70, 0.3);
+}
+.nui-btn--primary:hover { background: var(--nerd-primary-hover); transform: translateY(-1px); }
+.nui-btn--ghost {
+    background: transparent;
+    color: var(--nerd-text-soft);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.nui-btn--ghost:hover { color: var(--nerd-white); border-color: var(--nerd-text-soft); }
+
+/* Save toast */
+.save-toast {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    z-index: 300;
+    padding: 10px 18px;
+    background: var(--nerd-success);
+    color: var(--nerd-black);
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: 0 8px 24px rgba(0, 210, 106, 0.4);
+    opacity: 0;
+    transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.save-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Hide HUD when not visible */
+body.hud-hidden .compass,
+body.hud-hidden .stats,
+body.hud-hidden .speedo {
+    display: none !important;
+}
+
+
+/* cinema mode */
+.cinema-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    height: 12vh;
+    background: #000;
+    z-index: 9990;
+    pointer-events: none;
+    transition: transform 350ms cubic-bezier(.4, 0, .2, 1);
+}
+.cinema-bar--top {
+    top: 0;
+    transform: translateY(-100%);
+}
+.cinema-bar--bottom {
+    bottom: 0;
+    transform: translateY(100%);
+}
+
+/* Bars slide into view when cinema mode is on */
+body.is-cinema .cinema-bar--top    { transform: translateY(0); }
+body.is-cinema .cinema-bar--bottom { transform: translateY(0); }
+
+/* Cinema mode hides every HUD piece. The settings panel itself stays
+   visible so the player can still flip the toggle back off. */
+body.is-cinema .compass,
+body.is-cinema .stats,
+body.is-cinema .speedo {
+    display: none !important;
+}
