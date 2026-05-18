@@ -300,6 +300,11 @@ const cfg = {
     defaults: {}    // e.g. { hideCompass: false, hudSize: 100, ... }
 };
 
+// true once we've actually loaded the player's saved KVP/server settings.
+// init-config uses it to decide whether to apply Config defaults or leave
+// the user's saved choices in place.
+let savedLoaded = false;
+
 // Selector tables so we know what to hide.
 // elementSelectors: HUD pieces in the world view
 // panelSelectors  : rows inside /hudsettings (we walk up to the row container)
@@ -906,8 +911,8 @@ window.addEventListener('message', (event) => {
         case 'load-settings':
             if (data.settings) {
                 const saved = stripLockedFromSaved(data.settings);
-                // Merge what's left over the current settings
                 settings = Object.assign(settings, saved);
+                savedLoaded = true;
                 applyConfigVisibility();
                 applySettings();
             }
@@ -928,12 +933,17 @@ window.addEventListener('message', (event) => {
                 if (data.config.panel)    cfg.panel    = data.config.panel;
                 if (data.config.defaults) cfg.defaults = data.config.defaults;
 
-                // Apply locked-in defaults to the settings object up front
-                if (cfg.defaults.hudSize != null)     settings.scale = cfg.defaults.hudSize;
-                if (cfg.defaults.hideCompass != null) settings.hidden.compass = !!cfg.defaults.hideCompass;
-                if (cfg.defaults.hideStats   != null) settings.hidden.stats   = !!cfg.defaults.hideStats;
-                if (cfg.defaults.cinemaMode  != null) settings.cinemaMode      = !!cfg.defaults.cinemaMode;
-                if (data.config.minimapMode === 'always' || data.config.minimapMode === 'vehicle') {
+                // Apply admin defaults. Two rules:
+                //   - locked options always win (the player can't change them)
+                //   - unlocked options only fall back to defaults when no saved
+                //     value has come down yet (i.e. brand new player)
+                const useDefault = key => isPanelLocked(key) || !savedLoaded;
+                if (cfg.defaults.hudSize     != null && useDefault('hudSize'))     settings.scale          = cfg.defaults.hudSize;
+                if (cfg.defaults.hideCompass != null && useDefault('hideCompass')) settings.hidden.compass = !!cfg.defaults.hideCompass;
+                if (cfg.defaults.hideStats   != null && useDefault('hideStats'))   settings.hidden.stats   = !!cfg.defaults.hideStats;
+                if (cfg.defaults.cinemaMode  != null && useDefault('cinemaMode'))  settings.cinemaMode     = !!cfg.defaults.cinemaMode;
+                if ((data.config.minimapMode === 'always' || data.config.minimapMode === 'vehicle')
+                    && useDefault('minimapMode')) {
                     settings.minimapMode = data.config.minimapMode;
                 }
 
