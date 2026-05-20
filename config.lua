@@ -85,7 +85,7 @@ Config.MinimapMode = 'vehicle'
 -- ينزل لما:    يدخن (سيجارة = مهدّئ)
 -- محفوظ في:    metadata.stress (QBCore) ويرجع لما يدخل اللاعب مرة ثانية
 
-Config.DisableStress           = false  -- true = تعطيل نظام التوتر كاملاً
+Config.DisableStress           = true  -- true = تعطيل نظام التوتر كاملاً
 Config.StressMinSpeed          = 100    -- أقل سرعة (مع حزام) قبل ما يبدأ التوتر يرتفع
 Config.StressMinSpeedUnbuckled = 80     -- أقل سرعة (بدون حزام) قبل ما يبدأ التوتر يرتفع
 Config.StressShootChance       = 0.10   -- احتمالية رفع التوتر لكل طلقة (0.0 إلى 1.0)

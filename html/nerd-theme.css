@@ -16,6 +16,7 @@
 :root {
     /* === BRAND === */
     --nerd-primary:        #ED0246;
+    --nerd-primary-rgb:    237, 2, 70;   /* same color, as RGB triplet for rgba() use */
     --nerd-primary-50:     #FFE6EC;
     --nerd-primary-100:    #FFCCD9;
     --nerd-primary-200:    #FF99B3;
@@ -28,8 +29,8 @@
     --nerd-primary-900:    #4A0114;
     --nerd-primary-hover:  #FF1A5E;
     --nerd-primary-dark:   #B8003A;
-    --nerd-primary-soft:   rgba(237, 2, 70, 0.15);
-    --nerd-primary-glow:   rgba(237, 2, 70, 0.45);
+    --nerd-primary-soft:   rgba(var(--nerd-primary-rgb), 0.15);
+    --nerd-primary-glow:   rgba(var(--nerd-primary-rgb), 0.45);
 
     /* === NEUTRALS === */
     --nerd-black:          #000000;
@@ -44,7 +45,7 @@
     --nerd-border:         rgba(255, 255, 255, 0.06);
     --nerd-border-strong:  rgba(255, 255, 255, 0.12);
     --nerd-border-bold:    rgba(255, 255, 255, 0.2);
-    --nerd-border-glow:    rgba(237, 2, 70, 0.6);
+    --nerd-border-glow:    rgba(var(--nerd-primary-rgb), 0.6);
 
     /* === TEXT === */
     --nerd-white:          #FFFFFF;
@@ -139,11 +140,11 @@
     --nerd-shadow-md:    0 8px 24px rgba(0, 0, 0, 0.5);
     --nerd-shadow-lg:    0 16px 48px rgba(0, 0, 0, 0.6);
     --nerd-shadow-xl:    0 32px 80px rgba(0, 0, 0, 0.7);
-    --nerd-shadow-glow:        0 0 24px rgba(237, 2, 70, 0.45);
-    --nerd-shadow-glow-lg:     0 0 60px rgba(237, 2, 70, 0.5);
-    --nerd-shadow-glow-xl:     0 0 100px rgba(237, 2, 70, 0.6);
+    --nerd-shadow-glow:        0 0 24px rgba(var(--nerd-primary-rgb), 0.45);
+    --nerd-shadow-glow-lg:     0 0 60px rgba(var(--nerd-primary-rgb), 0.5);
+    --nerd-shadow-glow-xl:     0 0 100px rgba(var(--nerd-primary-rgb), 0.6);
     --nerd-shadow-inset:       inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    --nerd-shadow-inset-glow:  inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(237, 2, 70, 0.3);
+    --nerd-shadow-inset-glow:  inset 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 -1px 0 rgba(var(--nerd-primary-rgb), 0.3);
 
     /* === EFFECTS === */
     --nerd-blur-xs:   blur(4px);
@@ -283,8 +284,8 @@ a:hover { color: var(--nerd-primary-hover); }
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse at 20% 0%, rgba(237,2,70,0.18) 0%, transparent 50%),
-        radial-gradient(ellipse at 100% 100%, rgba(237,2,70,0.08) 0%, transparent 50%);
+        radial-gradient(ellipse at 20% 0%, rgba(var(--nerd-primary-rgb), 0.18) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba(var(--nerd-primary-rgb), 0.08) 0%, transparent 50%);
     pointer-events: none;
 }
 
@@ -313,7 +314,7 @@ a:hover { color: var(--nerd-primary-hover); }
 }
 
 .nerd-panel--sharp { border-radius: 0; border-left: 4px solid var(--nerd-primary); }
-.nerd-panel--soft  { background: rgba(237,2,70,0.04); border-color: rgba(237,2,70,0.2); }
+.nerd-panel--soft  { background: rgba(var(--nerd-primary-rgb), 0.04); border-color: rgba(var(--nerd-primary-rgb), 0.2); }
 .nerd-panel--dark  { background: var(--nerd-black); }
 .nerd-panel--lift {
     transition: all var(--nerd-duration-normal) var(--nerd-ease);
@@ -441,11 +442,11 @@ a:hover { color: var(--nerd-primary-hover); }
 .nerd-btn--primary {
     background: var(--nerd-primary);
     color: var(--nerd-white);
-    box-shadow: 0 4px 14px rgba(237, 2, 70, 0.3);
+    box-shadow: 0 4px 14px rgba(var(--nerd-primary-rgb), 0.3);
 }
 .nerd-btn--primary:hover {
     background: var(--nerd-primary-hover);
-    box-shadow: 0 8px 24px rgba(237, 2, 70, 0.5);
+    box-shadow: 0 8px 24px rgba(var(--nerd-primary-rgb), 0.5);
     transform: translateY(-2px);
 }
 .nerd-btn--primary:active { transform: translateY(0); }
@@ -479,9 +480,9 @@ a:hover { color: var(--nerd-primary-hover); }
 .nerd-btn--gradient {
     background: var(--nerd-grad-primary);
     color: var(--nerd-white);
-    box-shadow: 0 4px 14px rgba(237, 2, 70, 0.4);
+    box-shadow: 0 4px 14px rgba(var(--nerd-primary-rgb), 0.4);
 }
-.nerd-btn--gradient:hover { box-shadow: 0 8px 24px rgba(237, 2, 70, 0.6); transform: translateY(-2px); }
+.nerd-btn--gradient:hover { box-shadow: 0 8px 24px rgba(var(--nerd-primary-rgb), 0.6); transform: translateY(-2px); }
 
 .nerd-btn--glow {
     background: var(--nerd-primary);
@@ -489,8 +490,8 @@ a:hover { color: var(--nerd-primary-hover); }
     animation: nerd-glow-pulse 2s ease-in-out infinite;
 }
 @keyframes nerd-glow-pulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(237, 2, 70, 0.5); }
-    50%      { box-shadow: 0 0 40px rgba(237, 2, 70, 0.8); }
+    0%, 100% { box-shadow: 0 0 20px rgba(var(--nerd-primary-rgb), 0.5); }
+    50%      { box-shadow: 0 0 40px rgba(var(--nerd-primary-rgb), 0.8); }
 }
 
 .nerd-btn--xs { padding: 6px 12px; font-size: 10px; gap: 4px; }
@@ -537,12 +538,12 @@ a:hover { color: var(--nerd-primary-hover); }
     display: flex; align-items: center; justify-content: center;
     border: none;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(237, 2, 70, 0.4);
+    box-shadow: 0 8px 20px rgba(var(--nerd-primary-rgb), 0.4);
     transition: all var(--nerd-duration-normal) var(--nerd-ease);
 }
 .nerd-fab:hover {
     transform: scale(1.08);
-    box-shadow: 0 12px 28px rgba(237, 2, 70, 0.5);
+    box-shadow: 0 12px 28px rgba(var(--nerd-primary-rgb), 0.5);
 }
 
 /* --------------------------------------------------------------
@@ -1105,7 +1106,7 @@ a:hover { color: var(--nerd-primary-hover); }
 .nerd-segments__item.is-active {
     background: var(--nerd-primary);
     color: var(--nerd-white);
-    box-shadow: 0 4px 12px rgba(237, 2, 70, 0.3);
+    box-shadow: 0 4px 12px rgba(var(--nerd-primary-rgb), 0.3);
 }
 
 /* Breadcrumb */

@@ -420,6 +420,8 @@ function stripLockedFromSaved(saved) {
 function applySettings() {
     Object.entries(settings.colors).forEach(([s, c]) => applyColor(s, c));
     Object.entries(settings.positions).forEach(([id, pos]) => {
+        // compass stays horizontally centered by CSS - drag only saved its Y
+        if (id === 'compass') return;
         const el = $(`[data-hud="${id}"]`);
         if (el && pos.x != null) {
             el.style.left = pos.x + 'px';
@@ -429,6 +431,8 @@ function applySettings() {
             el.style.transform = 'none';
         }
     });
+    // strip any stale compass position from past drags - CSS centering wins
+    delete settings.positions.compass;
     Object.entries(settings.hidden).forEach(([id, h]) => {
         const el = $(`[data-hud="${id}"]`);
         if (el) el.style.display = h ? 'none' : '';
@@ -441,12 +445,15 @@ function applySettings() {
 
 function applyColor(stat, color) {
     if (stat === 'brand') {
-        document.documentElement.style.setProperty('--nerd-primary', color);
         const r = parseInt(color.slice(1, 3), 16);
         const g = parseInt(color.slice(3, 5), 16);
         const b = parseInt(color.slice(5, 7), 16);
-        document.documentElement.style.setProperty('--nerd-primary-glow', `rgba(${r},${g},${b},0.45)`);
-        document.documentElement.style.setProperty('--nerd-primary-soft', `rgba(${r},${g},${b},0.15)`);
+        const root = document.documentElement.style;
+        root.setProperty('--nerd-primary', color);
+        // RGB triplet drives every rgba(var(--nerd-primary-rgb), X) in the CSS
+        root.setProperty('--nerd-primary-rgb',  `${r}, ${g}, ${b}`);
+        root.setProperty('--nerd-primary-glow', `rgba(${r},${g},${b},0.45)`);
+        root.setProperty('--nerd-primary-soft', `rgba(${r},${g},${b},0.15)`);
     } else {
         const el = $(`.stat--${stat}`);
         if (el) el.style.setProperty('--stat-color', color);
@@ -521,9 +528,13 @@ function syncControls() {
         const stat = row.dataset.stat;
         const color = settings.colors[stat] || '#ED0246';
         row.style.setProperty('--row-color', color);
-        row.querySelectorAll('.color-swatch').forEach(s => {
+        // preset swatches highlight if they match; picker has no data-color so skip
+        row.querySelectorAll('.color-swatch:not(.color-swatch--picker)').forEach(s => {
             s.classList.toggle('is-active', s.dataset.color.toLowerCase() === color.toLowerCase());
         });
+        // mirror the live color back into the picker input
+        const picker = row.querySelector('.color-row__picker');
+        if (picker) picker.value = color;
     });
     $('#h-compass').checked = settings.hidden.compass || false;
     $('#h-stats').checked   = settings.hidden.stats || false;
@@ -541,10 +552,12 @@ function syncControls() {
     $('#op-v').textContent    = settings.effects.opacity + '%';
 }
 
-// color pickers
+// color pickers - preset swatches + native picker for any custom color
 $$('.color-row').forEach(row => {
     const stat = row.dataset.stat;
-    row.querySelectorAll('.color-swatch').forEach(swatch => {
+
+    // the four preset swatches
+    row.querySelectorAll('.color-swatch:not(.color-swatch--picker)').forEach(swatch => {
         swatch.addEventListener('click', () => {
             row.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('is-active'));
             swatch.classList.add('is-active');
@@ -552,6 +565,18 @@ $$('.color-row').forEach(row => {
             row.style.setProperty('--row-color', swatch.dataset.color);
         });
     });
+
+    // native color picker for full freedom
+    const picker = row.querySelector('.color-row__picker');
+    if (picker) {
+        picker.addEventListener('input', e => {
+            const color = e.target.value.toUpperCase();
+            // no preset matches a freely picked color, so clear them
+            row.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('is-active'));
+            applyColor(stat, color);
+            row.style.setProperty('--row-color', color);
+        });
+    }
 });
 
 // hide-element toggles
@@ -811,7 +836,17 @@ document.addEventListener('mouseup', () => {
     if (drag) {
         drag.el.classList.remove('is-being-dragged');
         const id = drag.el.dataset.hud;
-        settings.positions[id] = { x: parseInt(drag.el.style.left), y: parseInt(drag.el.style.top) };
+        if (id === 'compass') {
+            // drop the inline left/top so CSS centering kicks back in
+            drag.el.style.left = '';
+            drag.el.style.top  = '';
+            drag.el.style.right = '';
+            drag.el.style.bottom = '';
+            drag.el.style.transform = '';
+            delete settings.positions.compass;
+        } else {
+            settings.positions[id] = { x: parseInt(drag.el.style.left), y: parseInt(drag.el.style.top) };
+        }
         drag = null;
     }
 });
